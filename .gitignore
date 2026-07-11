@@ -14,12 +14,9 @@ dist/
 # Testing and coverage
 coverage/
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Environment variables and secrets
+.env*
+!.env.example
 
 # Vercel
 .vercel/
@@ -47,3 +44,7 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Local AI instructions
+AGENTS.md
+CLAUDE.md
