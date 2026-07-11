@@ -147,3 +147,10 @@ body {
     display: none;
   }
 }
+
+/* Video background */
+@media (prefers-reduced-motion: reduce) {
+  .auth-video {
+    display: none;
+  }
+}
