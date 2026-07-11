@@ -185,7 +185,6 @@ export default function AuthPage() {
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
-      {/* Decorative frames */}
       {/* Theme control */}
       <div className="absolute right-6 top-6 z-20">
         <ThemeToggle />
