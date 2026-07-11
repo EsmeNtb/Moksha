@@ -32,7 +32,14 @@ type AuthMode = "login" | "signup";
 
 export default function AuthPage() {
   const router = useRouter();
-
+  const videos = [
+    "/videos/baseball.mp4",
+    "/videos/basketball.mp4",
+    "/videos/running.mp4",
+    "/videos/soccer.mp4",
+    "/videos/tennis.mp4",
+  ]
+  const [videoIndex, setVideoIndex] = React.useState(0);
   const [mode, setMode] = React.useState<AuthMode>("signup");
   const [name, setName] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -153,20 +160,25 @@ export default function AuthPage() {
     <main className="relative min-h-screen overflow-hidden bg-[#13213c]">
       {/* Video background */}
       <video
-        className="auth-video absolute inset-0 h-full w-full object-cover"
+        key={videos[videoIndex]}
+        className="auth-video absolute inset-0 z-0 h-full w-full object-cover"
         autoPlay
         muted
-        loop
         playsInline
-        preload="metadata"
-        poster="/videos/openplay-auth-poster.jpg"
+        preload="auto"
         aria-hidden="true"
-      >
+        onEnded={() =>
+            setVideoIndex(
+            (currentIndex) =>
+                (currentIndex + 1) % videos.length
+            )
+        }
+        >
         <source
-          src="/videos/openplay-auth.mp4"
-          type="video/mp4"
+            src={videos[videoIndex]}
+            type="video/mp4"
         />
-      </video>
+        </video>
 
       {/* Cinematic overlays */}
       <div className="absolute inset-0 bg-black/55 dark:bg-[#002f49]/70" />
@@ -174,10 +186,6 @@ export default function AuthPage() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
       {/* Decorative frames */}
-      <div className="pointer-events-none absolute inset-5 rounded-[2.5rem] border border-white/15 sm:inset-10" />
-
-      <div className="pointer-events-none absolute inset-9 rounded-[2rem] border border-[#fdbe4a]/25 sm:inset-16" />
-
       {/* Theme control */}
       <div className="absolute right-6 top-6 z-20">
         <ThemeToggle />
@@ -191,7 +199,7 @@ export default function AuthPage() {
             </div>
 
             <p className="text-sm font-black tracking-[0.18em]">
-              OPENPLAY
+              MOKSHA
             </p>
 
             <CardTitle className="mt-4 text-3xl font-black tracking-[-0.035em]">
