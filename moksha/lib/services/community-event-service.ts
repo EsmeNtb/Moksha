@@ -1,8 +1,14 @@
+export type ActivityType =
+  | "event"
+  | "tournament";
+
 export type CommunityEvent = {
   _id: string;
   title: string;
   venueId: string;
   sport: string;
+  activityType?: ActivityType;
+  coverImage?: string;
   date: string;
   time: string;
   level: string;
@@ -13,6 +19,7 @@ export type CommunityEvent = {
   hostName: string;
   hostHandle: string;
   hostAvatar: string;
+  description: string;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -22,6 +29,8 @@ export type CreateCommunityEventInput = {
   title: string;
   venueId: string;
   sport: string;
+  activityType: ActivityType;
+  coverImage: string;
   date: string;
   time: string;
   level: string;
@@ -35,15 +44,19 @@ export type CreateCommunityEventInput = {
 export async function getCommunityEvents(): Promise<
   CommunityEvent[]
 > {
-  const response = await fetch("/api/events", {
-    cache: "no-store",
-  });
+  const response = await fetch(
+    "/api/events",
+    {
+      cache: "no-store",
+    }
+  );
 
   const data = await response.json();
 
   if (!response.ok || !data.ok) {
     throw new Error(
-      data.message ?? "Could not load events."
+      data.message ??
+        "Could not load events."
     );
   }
 
@@ -53,19 +66,24 @@ export async function getCommunityEvents(): Promise<
 export async function createCommunityEvent(
   input: CreateCommunityEventInput
 ): Promise<CommunityEvent> {
-  const response = await fetch("/api/events", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(input),
-  });
+  const response = await fetch(
+    "/api/events",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify(input),
+    }
+  );
 
   const data = await response.json();
 
   if (!response.ok || !data.ok) {
     throw new Error(
-      data.message ?? "Could not create event."
+      data.message ??
+        "Could not create event."
     );
   }
 
@@ -82,7 +100,8 @@ export async function updateEventParticipation(
     {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type":
+          "application/json",
       },
       body: JSON.stringify({
         action,

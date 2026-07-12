@@ -6,7 +6,6 @@ import {
   BarChart3,
   CalendarDays,
   Check,
-  Circle,
   Clock3,
   Dumbbell,
   Flame,

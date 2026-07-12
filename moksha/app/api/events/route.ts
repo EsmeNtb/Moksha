@@ -12,6 +12,8 @@ type CreateEventBody = {
   venueId: string;
   sport: string;
   date: string;
+  activityType: "event" | "tournament";
+  coverImage: string;
   time: string;
   level:
     | "All levels"
@@ -124,6 +126,15 @@ export async function POST(
       venueId: body.venueId,
       sport:
         body.sport || String(venue.sport),
+
+      activityType:
+        body.activityType === "tournament"
+          ? "tournament"
+          : "event",
+
+      coverImage:
+        body.coverImage?.trim() ||
+        "/sports/volleyball.jpg",
 
       date: body.date,
       time: body.time,

@@ -35,6 +35,12 @@ function convertCommunityEvent(
       0,
       event.maxPlayers - participants
     ),
+    activityType:
+      event.activityType === "tournament"
+        ? "tournament"
+        : "event",
+    coverImage:
+      event.coverImage || "/gallery/running.jpg",
   };
 }
 

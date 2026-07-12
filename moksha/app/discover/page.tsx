@@ -1016,72 +1016,81 @@ export default function DiscoverPage() {
 
                         return (
                           <div
-                            key={
-                              event.id
-                            }
-                            className="rounded-2xl bg-background p-5"
+                            key={event.id}
+                            className="overflow-hidden rounded-2xl bg-background"
                           >
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <h4 className="font-bold">
-                                  {
-                                    event.title
-                                  }
-                                </h4>
+                            {event.coverImage && (
+                              <div className="relative h-32">
+                                <Image
+                                  src={event.coverImage}
+                                  alt={event.title}
+                                  fill
+                                  sizes="(max-width: 640px) 100vw, 576px"
+                                  className="object-cover"
+                                />
+                              </div>
+                            )}
 
-                                <p className="mt-2 text-sm text-muted-foreground">
-                                  {
-                                    event.date
-                                  }{" "}
-                                  ·{" "}
-                                  {
-                                    event.time
-                                  }
-                                </p>
+                            <div className="p-5">
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <h4 className="font-bold">
+                                    {event.title}
+                                  </h4>
+
+                                  <p className="mt-2 text-sm text-muted-foreground">
+                                    {event.date} · {event.time}
+                                  </p>
+                                </div>
+
+                                <div className="flex flex-col items-end gap-2">
+                                  <Badge variant="secondary">
+                                    {event.activityType ===
+                                    "tournament"
+                                      ? "Tournament"
+                                      : "Community event"}
+                                  </Badge>
+
+                                  <Badge variant="outline">
+                                    {event.level}
+                                  </Badge>
+                                </div>
                               </div>
 
-                              <Badge variant="secondary">
-                                {
-                                  event.level
-                                }
-                              </Badge>
-                            </div>
+                              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                                <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Users className="size-4" />
+                                  {event.availableSpots}{" "}
+                                  spots available
+                                </span>
 
-                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                              <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Users className="size-4" />
-
-                                {
-                                  event.availableSpots
-                                }{" "}
-                                spots
-                                available
-                              </span>
-
-                              <Button
-                                type="button"
-                                variant={
-                                  joined
-                                    ? "outline"
-                                    : "default"
-                                }
-                                size="sm"
-                                className="rounded-full"
-                                disabled={
-                                  updating
-                                }
-                                onClick={() => {
-                                  void toggleEvent(
-                                    event
-                                  );
-                                }}
-                              >
-                                {updating
-                                  ? "Updating..."
-                                  : joined
-                                    ? "Leave event"
-                                    : "Join event"}
-                              </Button>
+                                <Button
+                                  type="button"
+                                  variant={
+                                    joined
+                                      ? "outline"
+                                      : "default"
+                                  }
+                                  size="sm"
+                                  className="rounded-full"
+                                  disabled={updating}
+                                  onClick={() => {
+                                    void toggleEvent(event);
+                                  }}
+                                >
+                                  {updating
+                                    ? "Updating..."
+                                    : joined
+                                      ? event.activityType ===
+                                        "tournament"
+                                        ? "Leave tournament"
+                                        : "Leave event"
+                                      : event.activityType ===
+                                          "tournament"
+                                        ? "Register"
+                                        : "Join event"}
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         );

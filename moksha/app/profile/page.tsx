@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   CalendarDays,
@@ -60,6 +61,10 @@ type ProfileUser = MokshaUser & {
   pronouns?: string;
 };
 
+type ActivityType =
+  | "event"
+  | "tournament";
+
 type HostedEvent = {
   id: string;
   title: string;
@@ -70,6 +75,8 @@ type HostedEvent = {
   venueName?: string;
   date?: string;
   time?: string;
+  activityType: ActivityType;
+  coverImage: string;
 };
 
 type EventFormState = {
@@ -81,6 +88,8 @@ type EventFormState = {
   level: string;
   availableSpots: string;
   equipment: string;
+  activityType: ActivityType;
+  coverImage: string;
 };
 
 type EditProfileFormState = {
@@ -156,6 +165,8 @@ type UpcomingActivity = {
   sport: string;
   location: string;
   date: string;
+  activityType: ActivityType;
+  coverImage: string;
 };
 
 type Tournament = {
@@ -164,12 +175,36 @@ type Tournament = {
   sport: string;
   date: string;
   status: string;
+  location: string;
+  coverImage: string;
 };
 
-const upcomingActivities: UpcomingActivity[] = [];
-
-const tournaments: Tournament[] = [];
-
+const coverImageOptions = [
+  {
+    label: "Basketball",
+    value: "/gallery/playing_1.jpg",
+  },
+  {
+    label: "Running",
+    value: "/gallery/running.jpg",
+  },
+  {
+    label: "Tennis",
+    value: "/sports/tennis.jpg",
+  },
+  {
+    label: "Volleyball",
+    value: "/sports/volleyball.jpg",
+  },
+  {
+    label: "Football",
+    value: "/sports/soccer.jpg",
+  },
+  {
+    label: "Fitness",
+    value: "/sports/fitness.jpg",
+  },
+];
 
 const defaultHostedEvents: HostedEvent[] = [];
 
@@ -182,6 +217,8 @@ const initialEventForm: EventFormState = {
   level: "All levels",
   availableSpots: "8",
   equipment: "",
+  activityType: "event",
+  coverImage: "/gallery/running.jpg",
 };
 
 const initialEditProfileForm: EditProfileFormState = {
@@ -208,6 +245,14 @@ export default function ProfilePage() {
     React.useState<HostedEvent[]>(
       defaultHostedEvents
     );
+
+  const [
+    upcomingActivities,
+    setUpcomingActivities,
+  ] = React.useState<UpcomingActivity[]>([]);
+
+  const [tournaments, setTournaments] =
+    React.useState<Tournament[]>([]);
 
   const [eventForm, setEventForm] =
     React.useState<EventFormState>(
@@ -243,6 +288,38 @@ export default function ProfilePage() {
 
       setUser(loadedUser);
 
+      let joinedIds: string[] = [];
+
+      const storedJoined =
+        window.localStorage.getItem(
+          "moksha-joined-events"
+        );
+
+      if (storedJoined) {
+        try {
+          joinedIds = JSON.parse(storedJoined);
+        } catch {
+          joinedIds = [];
+        }
+      }
+
+      const localUpcoming: UpcomingActivity[] =
+        discoveryVenues.flatMap((venue) =>
+          venue.events
+            .filter((event) =>
+              joinedIds.includes(event.id)
+            )
+            .map((event) => ({
+              id: event.id,
+              title: event.title,
+              sport: venue.sport,
+              location: venue.name,
+              date: `${event.date} · ${event.time}`,
+              activityType: "event" as const,
+              coverImage: venue.image,
+            }))
+        );
+
       try {
         const communityEvents =
           await getCommunityEvents();
@@ -254,8 +331,9 @@ export default function ProfilePage() {
           communityEvents
             .filter(
               (event) =>
-                (event.hostHandle ?? "").toLowerCase() ===
-                currentHandle
+                (
+                  event.hostHandle ?? ""
+                ).toLowerCase() === currentHandle
             )
             .map((event) => {
               const venue = discoveryVenues.find(
@@ -279,13 +357,84 @@ export default function ProfilePage() {
                 venueName: venue?.name,
                 date: event.date,
                 time: event.time,
+                activityType:
+                  event.activityType === "tournament"
+                    ? "tournament"
+                    : "event",
+                coverImage:
+                  event.coverImage ||
+                  venue?.image ||
+                  "/gallery/running.jpg",
               };
             });
 
-        setHostedEvents([
-          ...defaultHostedEvents,
-          ...savedHostedEvents,
+        const joinedMongoEvents =
+          communityEvents.filter((event) =>
+            event.participantIds?.includes(
+              "demo-user"
+            )
+          );
+
+        const mongoUpcoming: UpcomingActivity[] =
+          joinedMongoEvents
+            .filter(
+              (event) =>
+                event.activityType !== "tournament"
+            )
+            .map((event) => {
+              const venue = discoveryVenues.find(
+                (item) =>
+                  item.id === event.venueId
+              );
+
+              return {
+                id: event._id,
+                title: event.title,
+                sport: event.sport,
+                location:
+                  venue?.name ?? "Community venue",
+                date: `${event.date} · ${event.time}`,
+                activityType: "event",
+                coverImage:
+                  event.coverImage ||
+                  venue?.image ||
+                  "/gallery/running.jpg",
+              };
+            });
+
+        const joinedTournaments: Tournament[] =
+          joinedMongoEvents
+            .filter(
+              (event) =>
+                event.activityType === "tournament"
+            )
+            .map((event) => {
+              const venue = discoveryVenues.find(
+                (item) =>
+                  item.id === event.venueId
+              );
+
+              return {
+                id: event._id,
+                title: event.title,
+                sport: event.sport,
+                date: `${event.date} · ${event.time}`,
+                status: "Registered",
+                location:
+                  venue?.name ?? "Community venue",
+                coverImage:
+                  event.coverImage ||
+                  venue?.image ||
+                  "/gallery/running.jpg",
+              };
+            });
+
+        setHostedEvents(savedHostedEvents);
+        setUpcomingActivities([
+          ...localUpcoming,
+          ...mongoUpcoming,
         ]);
+        setTournaments(joinedTournaments);
       } catch (error) {
         console.error(
           "Could not load community events:",
@@ -293,6 +442,8 @@ export default function ProfilePage() {
         );
 
         setHostedEvents(defaultHostedEvents);
+        setUpcomingActivities(localUpcoming);
+        setTournaments([]);
       }
     }
 
@@ -452,6 +603,10 @@ export default function ProfilePage() {
           hostAvatar: getAvatarSrc(
             user.avatar
           ),
+          activityType:
+            eventForm.activityType,
+          coverImage:
+            eventForm.coverImage,
         });
 
       setHostedEvents((current) => [
@@ -473,6 +628,14 @@ export default function ProfilePage() {
           venueName: selectedVenue.name,
           date: createdEvent.date,
           time: createdEvent.time,
+          activityType:
+            createdEvent.activityType ===
+            "tournament"
+              ? "tournament"
+              : "event",
+          coverImage:
+            createdEvent.coverImage ||
+            eventForm.coverImage,
         },
       ]);
 
@@ -483,7 +646,9 @@ export default function ProfilePage() {
       setCreateEventOpen(false);
 
       toast.success(
-        "Your event was created."
+        eventForm.activityType === "tournament"
+          ? "Your tournament was created."
+          : "Your event was created."
       );
     } catch (error) {
       console.error(
@@ -602,7 +767,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="rounded-2xl bg-background p-3">
                   <p className="text-2xl font-black">
-                    8
+                    {upcomingActivities.length}
                   </p>
 
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -679,15 +844,23 @@ export default function ProfilePage() {
                 <div>
                   <div className="mb-3 flex items-center justify-between gap-4">
                     <p className="font-semibold">
-                      Weekly consistency
+                      Upcoming plan
                     </p>
 
                     <span className="text-sm text-muted-foreground">
-                      3 of 4 activities
+                      {upcomingActivities.length +
+                        tournaments.length}{" "}
+                      joined
                     </span>
                   </div>
 
-                  <Progress value={75} />
+                  <Progress
+                    value={Math.min(
+                      100,
+                      (upcomingActivities.length +
+                        tournaments.length) * 25
+                    )}
+                  />
                 </div>
 
                 <Separator />
@@ -768,44 +941,56 @@ export default function ProfilePage() {
               </CardHeader>
 
               <CardContent className="grid gap-3 p-7 pt-3 sm:p-8 sm:pt-4">
-                {upcomingActivities.map(
-                  (activity) => (
-                    <button
-                      key={activity.id}
-                      type="button"
-                      className="flex w-full items-start gap-4 rounded-2xl bg-background p-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
-                    >
-                      <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
-                        <CalendarDays className="size-5" />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="font-semibold">
-                            {activity.title}
-                          </p>
-
-                          <Badge
-                            variant="outline"
-                            className="rounded-full"
-                          >
-                            {activity.sport}
-                          </Badge>
+                {upcomingActivities.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">
+                    No joined activities yet.
+                  </div>
+                ) : (
+                  upcomingActivities.map(
+                    (activity) => (
+                      <button
+                        key={activity.id}
+                        type="button"
+                        className="flex w-full items-start gap-4 rounded-2xl bg-background p-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+                      >
+                        <div className="relative size-14 shrink-0 overflow-hidden rounded-xl">
+                          <Image
+                            src={activity.coverImage}
+                            alt={activity.title}
+                            fill
+                            sizes="56px"
+                            className="object-cover"
+                          />
                         </div>
 
-                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="size-3.5" />
-                            {activity.location}
-                          </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="font-semibold">
+                              {activity.title}
+                            </p>
 
-                          <span className="flex items-center gap-1">
-                            <CalendarDays className="size-3.5" />
-                            {activity.date}
-                          </span>
+                            <Badge
+                              variant="outline"
+                              className="rounded-full"
+                            >
+                              {activity.sport}
+                            </Badge>
+                          </div>
+
+                          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <MapPin className="size-3.5" />
+                              {activity.location}
+                            </span>
+
+                            <span className="flex items-center gap-1">
+                              <CalendarDays className="size-3.5" />
+                              {activity.date}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </button>
+                      </button>
+                    )
                   )
                 )}
               </CardContent>
@@ -825,29 +1010,51 @@ export default function ProfilePage() {
                 </CardHeader>
 
                 <CardContent className="grid gap-3 px-7 pb-7">
-                  {tournaments.map(
-                    (tournament) => (
-                      <div
-                        key={tournament.id}
-                        className="rounded-2xl bg-background p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="font-semibold">
-                              {tournament.title}
-                            </p>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                              {tournament.sport} ·{" "}
-                              {tournament.date}
-                            </p>
+                  {tournaments.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">
+                      No tournaments joined yet.
+                    </div>
+                  ) : (
+                    tournaments.map(
+                      (tournament) => (
+                        <div
+                          key={tournament.id}
+                          className="overflow-hidden rounded-2xl bg-background"
+                        >
+                          <div className="relative h-28">
+                            <Image
+                              src={tournament.coverImage}
+                              alt={tournament.title}
+                              fill
+                              sizes="(max-width: 1280px) 100vw, 50vw"
+                              className="object-cover"
+                            />
                           </div>
 
-                          <Badge variant="secondary">
-                            {tournament.status}
-                          </Badge>
+                          <div className="p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="font-semibold">
+                                  {tournament.title}
+                                </p>
+
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  {tournament.sport} ·{" "}
+                                  {tournament.date}
+                                </p>
+
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  {tournament.location}
+                                </p>
+                              </div>
+
+                              <Badge variant="secondary">
+                                {tournament.status}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )
                     )
                   )}
                 </CardContent>
@@ -881,12 +1088,27 @@ export default function ProfilePage() {
                 </CardHeader>
 
                 <CardContent className="grid gap-3 px-7 pb-7">
-                  {hostedEvents.map((event) => (
+                  {hostedEvents.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">
+                      No hosted activities yet.
+                    </div>
+                  ) : (
+                    hostedEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="rounded-2xl bg-background p-4"
+                      className="overflow-hidden rounded-2xl bg-background"
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="relative h-28">
+                        <Image
+                          src={event.coverImage}
+                          alt={event.title}
+                          fill
+                          sizes="(max-width: 1280px) 100vw, 50vw"
+                          className="object-cover"
+                        />
+                      </div>
+
+                      <div className="flex items-start gap-3 p-4">
                         <Avatar className="size-10 shrink-0 border border-border">
                           <AvatarImage
                             src={
@@ -915,9 +1137,18 @@ export default function ProfilePage() {
                               </p>
                             </div>
 
-                            <Badge variant="outline">
-                              {event.status}
-                            </Badge>
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge variant="secondary">
+                                {event.activityType ===
+                                "tournament"
+                                  ? "Tournament"
+                                  : "Community event"}
+                              </Badge>
+
+                              <Badge variant="outline">
+                                {event.status}
+                              </Badge>
+                            </div>
                           </div>
 
                           {(event.venueName ||
@@ -950,7 +1181,8 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -1253,6 +1485,127 @@ export default function ProfilePage() {
                     className="h-12 rounded-xl bg-background"
                   />
                 </div>
+
+                <section>
+                  <h3 className="font-bold">
+                    Activity type
+                  </h3>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Choose whether this is a community event or a tournament.
+                  </p>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {(
+                      [
+                        {
+                          value: "event",
+                          label: "Community event",
+                          description:
+                            "A casual activity open to the community.",
+                        },
+                        {
+                          value: "tournament",
+                          label: "Tournament",
+                          description:
+                            "A competitive event with registration.",
+                        },
+                      ] as const
+                    ).map((option) => {
+                      const selected =
+                        eventForm.activityType ===
+                        option.value;
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            setEventForm(
+                              (current) => ({
+                                ...current,
+                                activityType:
+                                  option.value,
+                              })
+                            )
+                          }
+                          className={`rounded-2xl border p-4 text-left transition ${
+                            selected
+                              ? "border-secondary bg-secondary text-secondary-foreground"
+                              : "border-border bg-background hover:border-secondary/60"
+                          }`}
+                        >
+                          <span className="font-semibold">
+                            {option.label}
+                          </span>
+
+                          <span
+                            className={`mt-1 block text-xs leading-5 ${
+                              selected
+                                ? "text-secondary-foreground/75"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {option.description}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="font-bold">
+                    Cover image
+                  </h3>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Choose a photo for Discover and your profile.
+                  </p>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {coverImageOptions.map((option) => {
+                      const selected =
+                        eventForm.coverImage ===
+                        option.value;
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            setEventForm(
+                              (current) => ({
+                                ...current,
+                                coverImage:
+                                  option.value,
+                              })
+                            )
+                          }
+                          className={`overflow-hidden rounded-2xl border text-left transition ${
+                            selected
+                              ? "border-secondary ring-2 ring-secondary/40"
+                              : "border-border hover:border-secondary/60"
+                          }`}
+                        >
+                          <div className="relative h-24">
+                            <Image
+                              src={option.value}
+                              alt={option.label}
+                              fill
+                              sizes="(max-width: 640px) 50vw, 180px"
+                              className="object-cover"
+                            />
+                          </div>
+
+                          <span className="block bg-background px-3 py-2 text-sm font-semibold">
+                            {option.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
 
                 <section className="rounded-2xl bg-background/65 p-5">
                   <div className="mb-4 flex items-start gap-3">

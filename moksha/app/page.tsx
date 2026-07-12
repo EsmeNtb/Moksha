@@ -187,7 +187,7 @@ export default function HomePage() {
                 </Badge>
 
                 <CardTitle className="text-3xl font-black tracking-[-0.035em] sm:text-4xl">
-                  Sport becomes easier when you know where to begin.
+                  Sport becomes easier when you know where to begin!!.
                 </CardTitle>
 
                 <CardDescription className="max-w-xl text-base leading-7">
@@ -202,7 +202,7 @@ export default function HomePage() {
                   className="h-12 w-full rounded-full sm:w-auto"
                   onClick={() => showPrototypeMessage("Explore activities")}
                 >
-                  Explore activities
+                  Coming soon...
                   <ArrowRight className="ml-2 size-4" />
                 </Button>
               </CardContent>
