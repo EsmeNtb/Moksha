@@ -257,7 +257,7 @@ export default function OnboardingPage() {
 
     toast.success("Your Moksha profile is ready.");
 
-    router.push("/profile");
+    router.push("/dashboard");
   }
 
   return (
