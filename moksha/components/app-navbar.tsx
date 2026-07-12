@@ -36,7 +36,7 @@ const navItems = [
     label: "Training",
     href: "/training",
     icon: Dumbbell,
-    ready: false,
+    ready: true,
   },
   {
     label: "Discover",
