@@ -17,7 +17,7 @@ export const sportPrograms: Record<
     sport: "Basketball",
     description:
       "Improve ball control, movement, shooting and decision-making.",
-    image: "/gallery/basketball.jpg",
+    image: "/sports/basketball_2.jpg",
 
     levels: {
       Beginner: {
@@ -171,7 +171,7 @@ export const sportPrograms: Record<
         address: "Roma Norte, CDMX",
         distance: "1.2 km",
         schedule: "Daily · 7:00 AM–10:00 PM",
-        image: "/gallery/basketball.jpg",
+        image: "/sports/basketball_2.jpg",
       },
       {
         id: "chapultepec-court",
@@ -179,7 +179,7 @@ export const sportPrograms: Record<
         address: "Bosque de Chapultepec",
         distance: "3.7 km",
         schedule: "Daily · 8:00 AM–8:00 PM",
-        image: "/gallery/basketball.jpg",
+        image: "/sports/basketball_2.jpg",
       },
     ],
 

@@ -40,7 +40,7 @@ function convertCommunityEvent(
         ? "tournament"
         : "event",
     coverImage:
-      event.coverImage || "/gallery/running.jpg",
+      event.coverImage || "/cancha.jpg",
   };
 }
 

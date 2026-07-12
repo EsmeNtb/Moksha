@@ -202,7 +202,7 @@ const coverImageOptions = [
   },
   {
     label: "Fitness",
-    value: "/sports/fitness.jpg",
+    value: "/gallery/fitness.jpg",
   },
 ];
 

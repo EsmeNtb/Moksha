@@ -181,7 +181,7 @@ export const discoveryVenues: SportVenue[] = [
     region: "Nuevo León",
     city: "Monterrey",
     address: "Barrio Antiguo, Monterrey",
-    image: "/sports/volleyball.jpg",
+    image: "/gallery/fitness.jpg",
     description:
       "Small-group functional training focused on strength, mobility and sustainable progress.",
     level: "Beginner friendly",
