@@ -94,7 +94,7 @@ export default function AuthPage() {
      */
 
     const existingUserRaw =
-      window.localStorage.getItem("openplay-user");
+      window.localStorage.getItem("moksha-user");
 
     if (mode === "signup") {
       const newUser = {
@@ -104,16 +104,16 @@ export default function AuthPage() {
       };
 
       window.localStorage.setItem(
-        "openplay-user",
+        "moksha-user",
         JSON.stringify(newUser)
       );
 
       window.localStorage.setItem(
-        "openplay-session",
+        "moksha-session",
         "active"
       );
 
-      toast.success("Welcome to OpenPlay.");
+      toast.success("Welcome to Moksha.");
 
       router.push("/onboarding");
       return;
@@ -121,7 +121,7 @@ export default function AuthPage() {
 
     if (!existingUserRaw) {
       window.localStorage.setItem(
-        "openplay-user",
+        "moksha-user",
         JSON.stringify({
           username: cleanName,
           onboardingComplete: false,
@@ -130,7 +130,7 @@ export default function AuthPage() {
       );
 
       window.localStorage.setItem(
-        "openplay-session",
+        "moksha-session",
         "active"
       );
 
@@ -143,7 +143,7 @@ export default function AuthPage() {
     const existingUser = JSON.parse(existingUserRaw);
 
     window.localStorage.setItem(
-      "openplay-session",
+      "moksha-session",
       "active"
     );
 
@@ -324,7 +324,7 @@ export default function AuthPage() {
                 className="h-12 w-full rounded-full"
               >
                 {isSubmitting
-                  ? "Opening OpenPlay..."
+                  ? "Opening Moksha..."
                   : mode === "signup"
                     ? "Create my profile"
                     : "Log in"}
