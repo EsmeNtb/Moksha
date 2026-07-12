@@ -22,7 +22,7 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
           disableTransitionOnChange
-          storageKey="openplay-theme"
+          storageKey="moksha-theme"
         >
           {children}
           <Toaster position="top-center" richColors />
