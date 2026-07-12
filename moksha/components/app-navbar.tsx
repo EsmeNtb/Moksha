@@ -42,13 +42,13 @@ const navItems = [
     label: "Discover",
     href: "/discover",
     icon: MapPin,
-    ready: false,
+    ready: true,
   },
   {
     label: "Sports",
     href: "/sports",
     icon: BookOpen,
-    ready: false,
+    ready: true,
   },
 ];
 

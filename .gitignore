@@ -7,19 +7,20 @@ node_modules/
 .next/
 out/
 
-# Production builds
+# Builds
 build/
 dist/
 
-# Testing and coverage
-coverage/
-
-# Environment variables and secrets
-.env*
+# Environment variables
+.env
+.env.*
 !.env.example
 
 # Vercel
 .vercel/
+
+# Testing
+coverage/
 
 # Logs
 *.log
@@ -32,7 +33,7 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Operating system files
+# OS
 .DS_Store
 Thumbs.db
 
@@ -40,12 +41,16 @@ Thumbs.db
 .vscode/
 .idea/
 
-
 # Temporary files
 *.tmp
 *.temp
 .cache/
 
+# Local credentials
+credentials.md
+*.pem
+*.key
+
 # Local AI instructions
-AGENTS.md
-CLAUDE.md
+**/AGENTS.md
+**/CLAUDE.md
